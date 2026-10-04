@@ -141,5 +141,5 @@ The displayed job-fit score is weighted as follows: text similarity 40%, require
 The public resume and letter tools generate drafts in the response and do not save submitted text. The resume builder's keyword check uses only recognized skill terms and is not an ATS score or hiring prediction; the builder does not call a hosted generative-AI service or invent candidate details. Use the browser print dialog to save a generated resume as PDF. The Europass-inspired builder is not an official Europass document service. Salary Insights compares user-entered compensation only; it does not provide live market salary data. Review generated material and all automated scores before relying on them.
 
 New feature tables are created automatically by SQLAlchemy when the application starts. The expanded MySQL reference schema is in `database/schema.sql`.
-#   i n t e r v i e w I Q  
+#   i n t e r v i e w I Q 
  
