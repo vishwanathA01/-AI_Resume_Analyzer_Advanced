@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Explore Jobs — ResumeAI{% endblock %}
+{% block main_class %}page-shell{% endblock %}
+{% block content %}
+<section class="page-intro">
+  <p class="eyebrow">OPPORTUNITIES, DISCOVERED</p>
+  <h1>Explore roles that move you forward.</h1>
+  <p>Search the active job catalog by title, company, location, description, or skills.</p>
+</section>
+<form class="search-bar" method="get" action="{{ url_for('main.jobs') }}">
+  <label class="sr-only" for="job-search">Search jobs</label>
+  <span aria-hidden="true">⌕</span>
+  <input id="job-search" type="search" name="q" value="{{ search }}" placeholder="Try “Python”, “analyst”, or “remote”">
+  <button class="btn" type="submit">Search roles</button>
+</form>
+<div class="catalog-heading"><h2>{% if search %}Results for “{{ search }}”{% else %}All open roles{% endif %}</h2><span>{{ jobs|length }} {{ 'role' if jobs|length == 1 else 'roles' }}</span></div>
+<section class="job-list">
+  {% for job in jobs %}
+  <article class="job-card catalog-job">
+    <div class="job-heading"><div><p class="card-kicker">{{ job.company }}</p><h3>{{ job.title }}</h3></div><span class="job-icon">↗</span></div>
+    <p class="job-location"><span aria-hidden="true">⌖</span> {{ job.location or 'Location not specified' }}{% if job.min_experience %}<span class="location-divider">·</span>{{ "%.1f"|format(job.min_experience) }}+ years experience{% endif %}</p>
+    <p class="job-description">{{ job.description }}</p>
+    {% if job.required_skills %}
+    <div class="job-skills" aria-label="Required skills">
+      {% for skill in job.required_skills.split(',') %}{% if skill.strip() %}<span class="badge">{{ skill.strip() }}</span>{% endif %}{% endfor %}
+    </div>
+    {% endif %}
+    <div class="job-card-bottom">
+      <span class="active-label"><i></i> Currently hiring</span>
+      {% if session.get('user_id') %}
+        <a class="text-link" href="{{ url_for('main.dashboard') }}">Match my resume <span aria-hidden="true">→</span></a>
+      {% else %}
+        <a class="text-link" href="{{ url_for('auth.register') }}">Create a profile to match <span aria-hidden="true">→</span></a>
+      {% endif %}
+    </div>
+  </article>
+  {% else %}
+  <div class="empty-state">
+    <span class="empty-icon">⌕</span>
+    <h2>{% if search %}No roles found for that search.{% else %}There are no active roles yet.{% endif %}</h2>
+    <p>{% if search %}Try another keyword, company, or skill.{% else %}Please check back later for new opportunities.{% endif %}</p>
+    {% if search %}<a class="text-link" href="{{ url_for('main.jobs') }}">Clear your search <span aria-hidden="true">→</span></a>{% endif %}
+  </div>
+  {% endfor %}
+</section>
+{% endblock %}
