@@ -1,15 +1,16 @@
 {% extends "base.html" %}
-{% block title %}How It Works — ResumeAI{% endblock %}
+{% block title %}How It Works — InterviewIQ{% endblock %}
 {% block main_class %}page-shell{% endblock %}
 {% block content %}
-<section class="page-intro">
+<section class="page-intro page-intro-illustrated">
   <p class="eyebrow">A CLEARER WAY TO PLAN YOUR NEXT MOVE</p>
   <h1>Good career decisions start with good information.</h1>
-  <p>ResumeAI turns the experience already in your resume into practical insights you can use to explore your next opportunity.</p>
+  <p>InterviewIQ turns the experience already in your resume into practical insights you can use to explore your next opportunity.</p>
+  <img class="page-intro-art" src="{{ url_for('static', filename='images/career-growth.svg') }}" alt="" width="720" height="440" fetchpriority="low">
 </section>
 <section class="process-grid">
   <article class="process-card"><span class="process-number">01</span><p class="card-kicker">UPLOAD YOUR RESUME</p><h2>Start with your experience.</h2><p>Upload a PDF or DOCX resume from your candidate dashboard. The app extracts the resume text for analysis.</p><div class="process-tags"><span>PDF</span><span>DOCX</span><span>Private account</span></div></article>
-  <article class="process-card"><span class="process-number">02</span><p class="card-kicker">REVIEW YOUR PROFILE</p><h2>See your skills clearly.</h2><p>ResumeAI detects skills from the resume and calculates a quality score to help you understand the profile you are presenting.</p><div class="process-tags"><span>Skill extraction</span><span>Resume score</span></div></article>
+  <article class="process-card"><span class="process-number">02</span><p class="card-kicker">REVIEW YOUR PROFILE</p><h2>See your skills clearly.</h2><p>InterviewIQ detects skills from the resume and calculates a quality score to help you understand the profile you are presenting.</p><div class="process-tags"><span>Skill extraction</span><span>Resume score</span></div></article>
   <article class="process-card"><span class="process-number">03</span><p class="card-kicker">EXPLORE ROLE MATCHES</p><h2>Focus on relevant roles.</h2><p>Compare your resume with active listings using text similarity and required-skill alignment. Review the overall fit and the skill gaps.</p><div class="process-tags"><span>Role recommendations</span><span>Skill-gap insights</span></div></article>
 </section>
 <section class="method-panel">

@@ -1,0 +1,40 @@
+<nav class="admin-workspace-nav" aria-label="Administrator workspace">
+  <div class="admin-nav-heading">
+    <div><p class="card-kicker">WORKSPACE</p><strong>Management sections</strong></div>
+  </div>
+  <div class="admin-nav-groups">
+    <section class="admin-nav-group">
+      <h2>Overview</h2>
+      <a class="admin-nav-link {{ 'is-active' if request.endpoint == 'admin.dashboard' else '' }}" href="{{ url_for('admin.dashboard') }}" {% if request.endpoint == 'admin.dashboard' %}aria-current="page"{% endif %}><span aria-hidden="true">⌂</span>Dashboard</a>
+    </section>
+    <section class="admin-nav-group">
+      <h2>People</h2>
+      <a class="admin-nav-link {{ 'is-active' if request.endpoint == 'admin.users' else '' }}" href="{{ url_for('admin.users') }}" {% if request.endpoint == 'admin.users' %}aria-current="page"{% endif %}><span aria-hidden="true">◎</span>Users</a>
+      <a class="admin-nav-link {{ 'is-active' if request.endpoint == 'admin.resumes' else '' }}" href="{{ url_for('admin.resumes') }}" {% if request.endpoint == 'admin.resumes' %}aria-current="page"{% endif %}><span aria-hidden="true">▤</span>Resumes</a>
+      <a class="admin-nav-link {{ 'is-active' if request.endpoint == 'admin.homepage_feedback' else '' }}" href="{{ url_for('admin.homepage_feedback') }}" {% if request.endpoint == 'admin.homepage_feedback' %}aria-current="page"{% endif %}><span aria-hidden="true">✦</span>Feedback</a>
+    </section>
+    <section class="admin-nav-group">
+      <h2>Job catalog</h2>
+      <a class="admin-nav-link {{ 'is-active' if request.endpoint == 'admin.manage_jobs' else '' }}" href="{{ url_for('admin.manage_jobs') }}" {% if request.endpoint == 'admin.manage_jobs' %}aria-current="page"{% endif %}><span aria-hidden="true">↗</span>Jobs</a>
+      <a class="admin-nav-link {{ 'is-active' if request.endpoint == 'admin.categories' else '' }}" href="{{ url_for('admin.categories') }}" {% if request.endpoint == 'admin.categories' %}aria-current="page"{% endif %}><span aria-hidden="true">▦</span>Categories</a>
+      <a class="admin-nav-link {{ 'is-active' if request.endpoint == 'admin.skills' else '' }}" href="{{ url_for('admin.skills') }}" {% if request.endpoint == 'admin.skills' %}aria-current="page"{% endif %}><span aria-hidden="true">✳</span>Skills database</a>
+    </section>
+    <section class="admin-nav-group">
+      <h2>AI & insights</h2>
+      <a class="admin-nav-link {{ 'is-active' if request.endpoint == 'admin.analytics' else '' }}" href="{{ url_for('admin.analytics') }}" {% if request.endpoint == 'admin.analytics' %}aria-current="page"{% endif %}><span aria-hidden="true">▥</span>Platform analytics</a>
+      <a class="admin-nav-link {{ 'is-active' if request.endpoint == 'admin.ai_analytics' else '' }}" href="{{ url_for('admin.ai_analytics') }}" {% if request.endpoint == 'admin.ai_analytics' %}aria-current="page"{% endif %}><span aria-hidden="true">✧</span>AI/ML analytics</a>
+      <a class="admin-nav-link {{ 'is-active' if request.endpoint == 'admin.match_analytics' else '' }}" href="{{ url_for('admin.match_analytics') }}" {% if request.endpoint == 'admin.match_analytics' %}aria-current="page"{% endif %}><span aria-hidden="true">⌁</span>Match analytics</a>
+      <a class="admin-nav-link {{ 'is-active' if request.endpoint == 'admin.reports_page' else '' }}" href="{{ url_for('admin.reports_page') }}" {% if request.endpoint == 'admin.reports_page' %}aria-current="page"{% endif %}><span aria-hidden="true">▧</span>Reports</a>
+      <a class="admin-nav-link" href="{{ url_for('admin.report') }}"><span aria-hidden="true">⇩</span>Download CSV</a>
+    </section>
+    <section class="admin-nav-group">
+      <h2>Platform</h2>
+      <a class="admin-nav-link {{ 'is-active' if request.endpoint == 'admin.resources' else '' }}" href="{{ url_for('admin.resources') }}" {% if request.endpoint == 'admin.resources' %}aria-current="page"{% endif %}><span aria-hidden="true">⌘</span>Learning resources</a>
+      <a class="admin-nav-link {{ 'is-active' if request.endpoint == 'admin.interview_questions' else '' }}" href="{{ url_for('admin.interview_questions') }}" {% if request.endpoint == 'admin.interview_questions' %}aria-current="page"{% endif %}><span aria-hidden="true">?</span>Interview questions</a>
+      <a class="admin-nav-link {{ 'is-active' if request.endpoint == 'admin.notifications' else '' }}" href="{{ url_for('admin.notifications') }}" {% if request.endpoint == 'admin.notifications' %}aria-current="page"{% endif %}><span aria-hidden="true">◉</span>Notifications</a>
+      <a class="admin-nav-link {{ 'is-active' if request.endpoint == 'admin.audit' else '' }}" href="{{ url_for('admin.audit') }}" {% if request.endpoint == 'admin.audit' %}aria-current="page"{% endif %}><span aria-hidden="true">◷</span>Activity logs</a>
+      <a class="admin-nav-link {{ 'is-active' if request.endpoint == 'admin.settings' else '' }}" href="{{ url_for('admin.settings') }}" {% if request.endpoint == 'admin.settings' %}aria-current="page"{% endif %}><span aria-hidden="true">⚙</span>System settings</a>
+      <a class="admin-nav-link {{ 'is-active' if request.endpoint == 'admin.admin_profile' else '' }}" href="{{ url_for('admin.admin_profile') }}" {% if request.endpoint == 'admin.admin_profile' %}aria-current="page"{% endif %}><span aria-hidden="true">◉</span>Admin profile</a>
+    </section>
+  </div>
+</nav>

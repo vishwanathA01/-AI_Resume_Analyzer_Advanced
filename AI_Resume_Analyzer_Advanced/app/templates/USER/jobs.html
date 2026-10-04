@@ -1,23 +1,25 @@
 {% extends "base.html" %}
-{% block title %}Explore Jobs — ResumeAI{% endblock %}
+{% block title %}Explore Jobs — InterviewIQ{% endblock %}
 {% block main_class %}page-shell{% endblock %}
 {% block content %}
-<section class="page-intro">
+<section class="page-intro page-intro-illustrated">
   <p class="eyebrow">OPPORTUNITIES, DISCOVERED</p>
   <h1>Explore roles that move you forward.</h1>
   <p>Search the active job catalog by title, company, location, description, or skills.</p>
+  <img class="page-intro-art" src="{{ url_for('static', filename='images/career-job-search.svg') }}" alt="" width="720" height="440" fetchpriority="low">
 </section>
 <form class="search-bar" method="get" action="{{ url_for('main.jobs') }}">
   <label class="sr-only" for="job-search">Search jobs</label>
   <span aria-hidden="true">⌕</span>
   <input id="job-search" type="search" name="q" value="{{ search }}" placeholder="Try “Python”, “analyst”, or “remote”">
+  <label class="sr-only" for="job-category">Filter by category</label><select id="job-category" name="category"><option value="">All categories</option>{% for category in categories %}<option value="{{ category.id }}" {{ 'selected' if selected_category == category.id else '' }}>{{ category.name }}</option>{% endfor %}</select>
   <button class="btn" type="submit">Search roles</button>
 </form>
 <div class="catalog-heading"><h2>{% if search %}Results for “{{ search }}”{% else %}All open roles{% endif %}</h2><span>{{ jobs|length }} {{ 'role' if jobs|length == 1 else 'roles' }}</span></div>
 <section class="job-list">
   {% for job in jobs %}
   <article class="job-card catalog-job">
-    <div class="job-heading"><div><p class="card-kicker">{{ job.company }}</p><h3>{{ job.title }}</h3></div><span class="job-icon">↗</span></div>
+    <div class="job-heading"><div><p class="card-kicker">{{ job.company }}</p><h3><a href="{{ url_for('main.job_details', job_id=job.id) }}">{{ job.title }}</a></h3></div><span class="job-icon">↗</span></div>
     <p class="job-location"><span aria-hidden="true">⌖</span> {{ job.location or 'Location not specified' }}{% if job.min_experience %}<span class="location-divider">·</span>{{ "%.1f"|format(job.min_experience) }}+ years experience{% endif %}</p>
     <p class="job-description">{{ job.description }}</p>
     {% if job.required_skills %}
@@ -25,14 +27,18 @@
       {% for skill in job.required_skills.split(',') %}{% if skill.strip() %}<span class="badge">{{ skill.strip() }}</span>{% endif %}{% endfor %}
     </div>
     {% endif %}
+    {% if job.categories %}<div class="job-skills" aria-label="Job categories">{% for category in job.categories %}<span class="badge">{{ category.name }}</span>{% endfor %}</div>{% endif %}
     <div class="job-card-bottom">
       <span class="active-label"><i></i> Currently hiring</span>
       {% if session.get('user_id') %}
-        <a class="text-link" href="{{ url_for('main.dashboard') }}">Match my resume <span aria-hidden="true">→</span></a>
+        <div class="resume-actions"><form method="post" action="{{ url_for('workspace.toggle_saved_job', job_id=job.id) }}"><input type="hidden" name="return_to" value="{{ url_for('main.jobs') }}"><button class="small-btn" type="submit">{{ 'Unsave job' if job.id in saved_job_ids else 'Save job' }}</button></form><a class="text-link" href="{{ url_for('workspace.compare_jobs', job_id=job.id) }}">Compare <span aria-hidden="true">→</span></a><a class="text-link" href="{{ url_for('workspace.applications') }}">Track application</a></div>
       {% else %}
         <a class="text-link" href="{{ url_for('auth.register') }}">Create a profile to match <span aria-hidden="true">→</span></a>
       {% endif %}
     </div>
+      <div class="external-job-links job-card-external-links" aria-label="Search related jobs on external boards">
+        {% for source, href in external_job_searches[job.id].items() %}<a href="{{ href }}" target="_blank" rel="noopener noreferrer">Also search {{ source }} <span aria-hidden="true">↗</span></a>{% endfor %}
+      </div>
   </article>
   {% else %}
   <div class="empty-state">
@@ -40,6 +46,11 @@
     <h2>{% if search %}No roles found for that search.{% else %}There are no active roles yet.{% endif %}</h2>
     <p>{% if search %}Try another keyword, company, or skill.{% else %}Please check back later for new opportunities.{% endif %}</p>
     {% if search %}<a class="text-link" href="{{ url_for('main.jobs') }}">Clear your search <span aria-hidden="true">→</span></a>{% endif %}
+    <div class="external-job-links empty-job-references">
+      <span>Continue your search:</span>
+      {% for source, href in fallback_job_searches.items() %}<a class="external-job-link" href="{{ href }}" target="_blank" rel="noopener noreferrer">Search {{ source }} <span aria-hidden="true">↗</span></a>{% endfor %}
+    </div>
+    <p class="job-board-disclaimer">External searches open on LinkedIn or Upwork; their listings and availability are managed by those platforms.</p>
   </div>
   {% endfor %}
 </section>

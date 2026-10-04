@@ -23,4 +23,4 @@ INSERT INTO job(title,company,location,description,required_skills,min_experienc
 
 INSERT INTO user(name,email,password_hash,role)
 VALUES ('System Admin','admin@resumeai.local',
-'scrypt:32768:8:1$temporary$replace-with-a-real-password','admin');
+'scrypt:32768:8:1$GCTzYnaETZro96S4$955b5446c144f2d36fe19804e4d399e0f9991d362c6d6d7c49928d7117b5174b8cad1a2be44db6fa3f8e3de79ef60102fdf89891f4c3ae49dd9705f102c42ce2','admin');

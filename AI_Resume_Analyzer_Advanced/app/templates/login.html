@@ -1,12 +1,25 @@
 {% extends "base.html" %}
-{% block title %}Login{% endblock %}
+{% block title %}Log in — InterviewIQ{% endblock %}
+{% block main_class %}auth-page{% endblock %}
 {% block content %}
-<div class="form-card">
-<h2>Welcome back</h2>
-<form method="post">
-<input name="email" type="email" placeholder="Email" required>
-<input name="password" type="password" placeholder="Password" required>
-<button class="btn">Login</button>
-</form>
-</div>
+<section class="auth-layout">
+  <div class="auth-story">
+    <span class="auth-story-icon">✦</span>
+    <p class="eyebrow">WELCOME BACK</p>
+    <h1>Your next career move is waiting.</h1>
+    <p>Pick up where you left off. Review your resume insights, explore your matches, and keep moving forward.</p>
+    <div class="auth-story-list"><span>✓ <b>Your profile, ready when you are</b></span><span>✓ <b>Recent roles and skill insights</b></span></div>
+    <img class="auth-story-art" src="{{ url_for('static', filename='images/career-job-search.svg') }}" alt="Illustration of a job search and matching roles" width="720" height="440">
+  </div>
+  <div class="auth-card">
+    <div class="auth-card-heading"><p class="eyebrow">YOUR CAREER WORKSPACE</p><h2>Welcome back</h2><p>Log in to continue to your dashboard.</p></div>
+    <form method="post" class="auth-form">
+      <label>Email address<input name="email" type="email" placeholder="you@example.com" autocomplete="email" required></label>
+      <label>Password<input name="password" type="password" placeholder="Enter your password" maxlength="128" autocomplete="current-password" required></label>
+      <button class="btn auth-submit" type="submit">Log in to InterviewIQ <span aria-hidden="true">→</span></button>
+    </form>
+    <p class="auth-switch">New to InterviewIQ? <a href="{{ url_for('auth.register') }}">Create an account</a></p>
+    <p class="auth-privacy">Your account is used to keep your resume analysis and job matches private.</p>
+  </div>
+</section>
 {% endblock %}

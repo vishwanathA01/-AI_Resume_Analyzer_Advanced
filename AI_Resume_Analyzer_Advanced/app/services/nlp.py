@@ -1,4 +1,5 @@
 import re
+from flask import has_app_context
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
@@ -20,7 +21,15 @@ def clean(text):
 def extract_skills(text):
     t = clean(text)
     found = []
-    for skill in sorted(SKILLS, key=len, reverse=True):
+    skill_names = set(SKILLS)
+    if has_app_context():
+        from app.models import SkillDefinition
+
+        skill_names.update(
+            item.name.lower()
+            for item in SkillDefinition.query.filter_by(is_active=True).all()
+        )
+    for skill in sorted(skill_names, key=len, reverse=True):
         pattern = r"(?<!\w)" + re.escape(skill.lower()) + r"(?!\w)"
         if re.search(pattern, t):
             found.append(skill)
@@ -28,8 +37,15 @@ def extract_skills(text):
 
 def similarity(resume_text, job_text):
     docs = [clean(resume_text), clean(job_text)]
+    if not all(docs):
+        return 0.0
     vectorizer = TfidfVectorizer(stop_words="english", ngram_range=(1,2))
-    matrix = vectorizer.fit_transform(docs)
+    try:
+        matrix = vectorizer.fit_transform(docs)
+    except ValueError as error:
+        if "empty vocabulary" not in str(error).lower():
+            raise
+        return 0.0
     return float(cosine_similarity(matrix[0:1], matrix[1:2])[0][0] * 100)
 
 def skill_score(resume_skills, required_skills):

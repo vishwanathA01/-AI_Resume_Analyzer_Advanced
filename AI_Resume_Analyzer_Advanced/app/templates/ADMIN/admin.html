@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}Admin Workspace — InterviewIQ{% endblock %}
+{% block main_class %}page-shell admin-dashboard{% endblock %}
+{% block content %}
+<section class="dashboard-welcome admin-welcome">
+  <div><p class="eyebrow">INTERVIEWIQ · ADMIN CONTROL CENTER</p><h1>Good to see you, {{ admin.name }}.</h1><p>Here’s the latest view of your candidate community, job catalog, and platform activity.</p></div>
+  <div class="admin-welcome-actions"><img class="admin-welcome-art" src="{{ url_for('static', filename='images/career-growth.svg') }}" alt="" width="720" height="440"><span class="admin-avatar">{{ admin.name[:1]|upper }}</span><a class="btn" href="#publish-job">Publish a role <span aria-hidden="true">→</span></a></div>
+</section>
+
+{% include "ADMIN/_admin_nav.html" %}
+
+<section class="grid admin-overview-stats">
+  <article class="stat admin-stat-candidates"><span class="admin-stat-icon">◎</span><small>Total candidates</small><strong>{{ user_count }}</strong><span>Registered user accounts</span></article>
+  <article class="stat admin-stat-resumes"><span class="admin-stat-icon">▤</span><small>Resumes analyzed</small><strong>{{ resume_count }}</strong><span>Average quality · {{ average_score }}%</span></article>
+  <article class="stat admin-stat-jobs"><span class="admin-stat-icon">↗</span><small>Active opportunities</small><strong>{{ active_job_count }}</strong><span>{{ job_count }} total listings</span></article>
+  <article class="stat admin-stat-matches"><span class="admin-stat-icon">✦</span><small>Matches generated</small><strong>{{ match_count }}</strong><span>{{ application_count }} tracked applications</span></article>
+</section>
+
+<section class="admin-overview-grid">
+  <article class="panel admin-signups-panel">
+    <div class="panel-heading"><div><p class="card-kicker">COMMUNITY GROWTH</p><h2>New candidates this week</h2></div><span class="count-chip">Last 7 days</span></div>
+    <p class="admin-panel-description">New candidate accounts created each day.</p>
+    <div class="signup-chart" role="img" aria-label="Candidate registrations in the last seven days: {% for day in signup_activity %}{{ day.date }} {{ day.count }}{% if not loop.last %}, {% endif %}{% endfor %}">
+      {% for day in signup_activity %}
+      <div class="signup-chart-day" title="{{ day.date }}: {{ day.count }} {{ 'candidate' if day.count == 1 else 'candidates' }}">
+        <strong>{{ day.count }}</strong>
+        <div class="signup-chart-track"><i style="height: {{ (day.count * 100 / (signup_max if signup_max else 1)) if day.count else 0 }}%"></i></div>
+        <span>{{ day.label }}</span>
+      </div>
+      {% endfor %}
+    </div>
+    <div class="admin-chart-foot"><span>Candidate profiles</span><strong>{{ user_count }} total</strong></div>
+  </article>
+
+  <article class="panel admin-activity-panel">
+    <div class="panel-heading"><div><p class="card-kicker">ADMIN OPERATIONS</p><h2>Recent activity</h2></div><a class="text-link" href="{{ url_for('admin.audit') }}">View audit log <span aria-hidden="true">→</span></a></div>
+    <div class="admin-recent-activity">
+      {% for log, actor in recent_activity %}
+      <article class="admin-activity-row">
+        <span class="admin-activity-icon">{{ '✓' if log.action.endswith('created') else '↗' }}</span>
+        <div><strong>{{ log.action|replace('.', ' ')|replace('_', ' ')|title }}</strong><small>{{ actor.name if actor else 'System' }}{% if log.details %} · {{ log.details }}{% endif %}</small></div>
+        <time datetime="{{ log.created_at.isoformat() }}">{{ log.created_at.strftime('%b %d') }}</time>
+      </article>
+      {% else %}
+      <div class="admin-empty-activity"><span>✦</span><div><strong>You’re all caught up.</strong><p>Administrative changes will appear here as they happen.</p></div></div>
+      {% endfor %}
+    </div>
+  </article>
+</section>
+
+<section class="grid two admin-analytics">
+  <article class="panel"><div class="panel-heading"><div><p class="card-kicker">JOB MARKET INSIGHTS</p><h2>Most demanded skills</h2></div></div>
+    {% for skill, count in skill_demand %}<div class="analytics-bar-row"><span>{{ skill }}</span><div class="analytics-bar"><i style="width: {{ (count * 100 / max_demand)|round|int }}%"></i></div><strong>{{ count }}</strong></div>{% else %}<p class="muted">Add skill requirements to jobs to populate this report.</p>{% endfor %}
+  </article>
+  <article class="panel"><div class="panel-heading"><div><p class="card-kicker">CANDIDATE SKILL GAPS</p><h2>Top missing skills</h2></div></div>
+    {% for skill, count in top_missing %}<div class="analytics-bar-row"><span>{{ skill }}</span><div class="analytics-bar analytics-gap"><i style="width: {{ (count * 100 / (top_missing[0][1] if top_missing else 1))|round|int }}%"></i></div><strong>{{ count }}</strong></div>{% else %}<p class="muted">Generate candidate job matches to identify common skill gaps.</p>{% endfor %}
+  </article>
+</section>
+
+<section class="panel admin-add-panel" id="publish-job">
+  <div class="panel-heading"><div><p class="card-kicker">OPPORTUNITY MANAGEMENT</p><h2>Publish a new role</h2></div><span class="panel-icon">＋</span></div>
+  <form method="post" action="{{ url_for('admin.add_job') }}" class="admin-job-form">
+    <label>Job title<input name="title" placeholder="e.g. Data Analyst" required></label>
+    <label>Company<input name="company" placeholder="Company name" required></label>
+    <label>Location<input name="location" placeholder="Remote or city"></label>
+    <label>Minimum experience<input name="min_experience" type="number" min="0" step="0.5" placeholder="0"></label>
+    <label>Job categories<select name="category_ids" multiple>{% for category in categories %}<option value="{{ category.id }}">{{ category.name }}</option>{% endfor %}</select></label>
+    <label class="form-wide">Required skills<input name="required_skills" placeholder="Python, SQL, data analysis"></label>
+    <label class="form-wide">Role description<textarea name="description" placeholder="Describe the responsibilities and qualifications..." required></textarea></label>
+    <div class="form-wide"><button class="btn" type="submit">Publish opportunity <span aria-hidden="true">→</span></button></div>
+  </form>
+</section>
+
+<section class="panel admin-list-panel">
+  <div class="panel-heading"><div><p class="card-kicker">JOB CATALOG</p><h2>Manage opportunities</h2></div><span class="count-chip">{{ jobs|length }} listings</span></div>
+  <div class="admin-job-list">
+  {% for job in jobs %}
+    <article class="admin-job-row">
+      <div class="admin-job-main"><span class="company-avatar">{{ job.company[:1]|upper }}</span><div><strong>{{ job.title }}</strong><small>{{ job.company }} · {{ job.location or 'Location not specified' }}</small></div></div>
+      <span class="status-chip {{ 'is-active' if job.is_active else 'is-inactive' }}"><i></i>{{ 'Active' if job.is_active else 'Paused' }}</span>
+      <form method="post" action="{{ url_for('admin.toggle_job', job_id=job.id) }}"><button class="small-btn secondary-btn" type="submit">{{ 'Pause listing' if job.is_active else 'Reactivate' }}</button></form>
+    </article>
+  {% else %}
+    <div class="inline-empty"><span class="empty-icon">＋</span><div><strong>No opportunities added yet.</strong><p>Use the form above to publish your first job.</p></div></div>
+  {% endfor %}
+  </div>
+</section>
+
+<section class="panel user-list-panel">
+  <div class="panel-heading"><div><p class="card-kicker">COMMUNITY</p><h2>Recent accounts</h2></div><span class="count-chip">{{ user_count }} total</span></div>
+  <div class="admin-user-list">
+  {% for account in users %}
+    <div class="admin-user-row"><span class="company-avatar user-avatar">{{ account.name[:1]|upper }}</span><div><strong>{{ account.name }}</strong><small>{{ account.email }}</small></div><span class="user-role">{{ account.role|capitalize }}</span><small class="user-joined">{{ account.created_at.strftime('%b %d, %Y') }}</small></div>
+  {% else %}
+    <p class="muted">No accounts yet.</p>
+  {% endfor %}
+  </div>
+</section>
+{% endblock %}

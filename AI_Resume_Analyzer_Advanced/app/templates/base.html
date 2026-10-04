@@ -3,18 +3,72 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>{% block title %}ResumeAI{% endblock %}</title>
+<title>{% block title %}InterviewIQ{% endblock %}</title>
+<link rel="icon" type="image/png" href="{{ url_for('static', filename='images/interviewiq-logo.png') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
 <nav class="nav">
-  <a class="brand" href="{{ url_for('main.home') }}"><span class="brand-mark">R</span> Resume<span>AI</span></a>
+  <a class="brand" href="{{ url_for('main.home') }}"><img class="brand-logo" src="{{ url_for('static', filename='images/interviewiq-logo.png') }}" alt=""><span class="brand-name">InterviewIQ</span></a>
   <div class="nav-links">
     <a href="{{ url_for('main.how_it_works') }}">How it works</a>
-    <a href="{{ url_for('main.jobs') }}">Explore jobs</a>
+    <a class="nav-mobile-jobs" href="{{ url_for('main.jobs') }}">Explore jobs</a>
+    <details class="workspace-menu public-tools-menu"><summary>Career tools</summary><div class="workspace-menu-items"><div class="workspace-menu-grid">
+      <section class="workspace-menu-group"><h2>Build your profile</h2>
+        <a href="{{ url_for('resources.resume_builder') }}">AI Resume Builder</a>
+        <a href="{{ url_for('resources.europass_cv_builder') }}">Europass CV Builder</a>
+        <a href="{{ url_for('resources.resume_analyzer') }}">Resume Analyzer</a>
+        <a href="{{ url_for('resources.linkedin_optimizer') }}">LinkedIn Optimizer</a>
+      </section>
+      <section class="workspace-menu-group"><h2>Check your fit</h2>
+        <a href="{{ url_for('resources.job_fit_checker') }}">Job Fit Checker</a>
+        <a href="{{ url_for('resources.salary_insights') }}">Salary Insights</a>
+        <a href="{{ url_for('resources.interview_prep') }}">Interview Prep</a>
+        <a href="{{ url_for('resources.cover_letter_generator') }}">Cover Letter Generator</a>
+      </section>
+      <section class="workspace-menu-group"><h2>Explore resources</h2>
+        <a href="{{ url_for('resources.resource_page', slug='resume-templates') }}">Resume Templates</a>
+        <a href="{{ url_for('resources.resource_page', slug='resume-examples') }}">Resume Examples</a>
+        <a href="{{ url_for('resources.resource_page', slug='ats-resume-score-guide') }}">ATS Resume Score Guide</a>
+        <a href="{{ url_for('resources.resource_page', slug='cover-letter-examples') }}">Cover Letter Examples</a>
+        <a href="{{ url_for('resources.resource_page', slug='resume-writing-guide') }}">Resume Writing Guide</a>
+        <a href="{{ url_for('resources.resource_hub') }}">Resources</a>
+        <a href="{{ url_for('resources.blog') }}">Blog</a>
+        <a href="{{ url_for('resources.help_center') }}">Help center</a>
+      </section>
+    </div></div></details>
     {% if session.get('user_id') %}
       <a href="{{ url_for('main.dashboard') }}">Dashboard</a>
+      <details class="workspace-menu"><summary>Workspace</summary><div class="workspace-menu-items"><div class="workspace-menu-grid workspace-menu-grid-user">
+        <section class="workspace-menu-group"><h2>Your dashboard</h2>
+          <a href="{{ url_for('main.dashboard') }}">Dashboard</a>
+          <a href="{{ url_for('main.profile') }}">Profile</a>
+          <a href="{{ url_for('main.community') }}">Community</a>
+          <a href="{{ url_for('workspace.notifications') }}">Notifications</a>
+          <a href="{{ url_for('workspace.settings') }}">Settings</a>
+          {% if session.get('role') == 'admin' %}<a href="{{ url_for('admin.dashboard') }}">Admin dashboard</a>{% endif %}
+        </section>
+        <section class="workspace-menu-group"><h2>Resume &amp; skills</h2>
+          <a href="{{ url_for('workspace.resume_tools', view='resume') }}">My Resume</a>
+          <a href="{{ url_for('workspace.resume_tools', view='analyzer') }}">AI Resume Analyzer</a>
+          <a href="{{ url_for('workspace.resume_tools', view='ats') }}">Resume Score &amp; ATS</a>
+          <a href="{{ url_for('workspace.resume_tools', view='skills') }}">Skills Intelligence</a>
+          <a href="{{ url_for('workspace.resume_tools', view='improvement') }}">Resume Improvement</a>
+          <a href="{{ url_for('workspace.resume_tools', view='history') }}">Resume Version History</a>
+        </section>
+        <section class="workspace-menu-group"><h2>Jobs &amp; growth</h2>
+          <a href="{{ url_for('main.jobs') }}">Job Search</a>
+          <a href="{{ url_for('workspace.recommendations') }}">AI Job Recommendations</a>
+          <a href="{{ url_for('workspace.compare_jobs') }}">Job Match Comparison</a>
+          <a href="{{ url_for('workspace.skill_gaps') }}">Skill Gap Analysis</a>
+          <a href="{{ url_for('workspace.learning') }}">AI Learning Recommendations</a>
+          <a href="{{ url_for('workspace.saved_jobs') }}">Saved Jobs</a>
+          <a href="{{ url_for('workspace.applications') }}">Application Tracker</a>
+          <a href="{{ url_for('workspace.interview') }}">Interview Preparation &amp; Questions</a>
+        </section>
+      </div></div></details>
       <a href="{{ url_for('main.matches') }}">My matches</a>
+      <a class="community-nav-link" href="{{ url_for('main.community') }}">Community</a>
       {% if session.get('role') == 'admin' %}<a href="{{ url_for('admin.dashboard') }}">Admin</a>{% endif %}
       <a class="nav-cta" href="{{ url_for('auth.logout') }}">Log out</a>
     {% else %}
@@ -31,9 +85,9 @@
 </main>
 <footer class="site-footer">
   <div class="footer-inner">
-    <a class="brand" href="{{ url_for('main.home') }}"><span class="brand-mark">R</span> Resume<span>AI</span></a>
-    <p>Make your next career move with clarity.</p>
-    <div><a href="{{ url_for('main.how_it_works') }}">How it works</a><a href="{{ url_for('main.jobs') }}">Explore jobs</a></div>
+    <a class="brand" href="{{ url_for('main.home') }}"><img class="brand-logo" src="{{ url_for('static', filename='images/interviewiq-logo.png') }}" alt=""><span class="brand-name">InterviewIQ</span></a>
+    <p>Practice. Analyze. Improve. Get Hired.</p>
+    <div><a href="{{ url_for('main.how_it_works') }}">How it works</a><a href="{{ url_for('main.jobs') }}">Explore jobs</a><a href="{{ url_for('resources.resource_hub') }}">Career resources</a><a href="{{ url_for('resources.help_center') }}">Help</a></div>
   </div>
 </footer>
 </body>

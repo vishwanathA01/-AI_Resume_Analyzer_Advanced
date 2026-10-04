@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}{{ page.title }} — InterviewIQ{% endblock %}
+{% block main_class %}page-shell resources-shell{% endblock %}
+{% block content %}
+<section class="page-intro resource-page-intro">
+  <p class="eyebrow">{{ page.kicker }}</p>
+  <h1>{{ page.title }}</h1>
+  <p>{{ page.description }}</p>
+</section>
+<section class="resource-article-list">
+  {% for heading, body in page.sections %}
+  <article class="resource-article">
+    <h2>{{ heading }}</h2>
+    {% if "\n" in body %}<pre>{{ body }}</pre>{% else %}<p>{{ body }}</p>{% endif %}
+  </article>
+  {% endfor %}
+</section>
+{% if page.action %}
+<section class="resource-action">
+  <div><p class="eyebrow">PUT IT INTO PRACTICE</p><h2>Take the next step.</h2></div>
+  {% if page.action[1] == 'resources.resource_page' %}
+  <a class="btn" href="{{ url_for(page.action[1], slug=slug) }}">{{ page.action[0] }} <span aria-hidden="true">→</span></a>
+  {% else %}
+  <a class="btn" href="{{ url_for(page.action[1]) }}">{{ page.action[0] }} <span aria-hidden="true">→</span></a>
+  {% endif %}
+</section>
+{% endif %}
+{% if slug in ['blog', 'help'] %}
+<section class="related-resources">
+  <h2>Explore more InterviewIQ resources</h2>
+  <div class="resource-link-row">
+    <a href="{{ url_for('resources.resource_page', slug='resume-writing-guide') }}">Resume writing guide <span>→</span></a>
+    <a href="{{ url_for('resources.resource_page', slug='ats-resume-score-guide') }}">ATS score guide <span>→</span></a>
+    <a href="{{ url_for('resources.resource_hub') }}">All career tools <span>→</span></a>
+  </div>
+</section>
+{% endif %}
+{% endblock %}

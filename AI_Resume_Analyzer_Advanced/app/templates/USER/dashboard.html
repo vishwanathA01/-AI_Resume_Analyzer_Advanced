@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+{% block title %}Your Career Dashboard — InterviewIQ{% endblock %}
+{% block main_class %}page-shell user-dashboard{% endblock %}
+{% block content %}
+<section class="dashboard-welcome">
+  <div class="dashboard-welcome-copy"><p class="eyebrow">YOUR CAREER WORKSPACE</p><h1>Welcome back, {{ user.name }}.</h1><p>Your career snapshot, resume tools, and recommended next steps — all in one place.</p><a class="dashboard-welcome-link" href="#uploadForm">Pick up where you left off <span aria-hidden="true">↓</span></a></div>
+  <div class="dashboard-welcome-side"><img src="{{ url_for('static', filename='images/career-growth.svg') }}" alt="Illustration of steady career growth" width="720" height="440"><a class="btn" href="{{ url_for('main.profile') }}">Manage profile <span aria-hidden="true">→</span></a></div>
+</section>
+
+<nav class="workspace-nav" aria-label="Jump to dashboard section">
+  <a href="#overview"><span>◉</span>Overview</a>
+  <a href="#uploadForm"><span>↑</span>Resume studio</a>
+  <a href="#skill-roadmap"><span>✦</span>Skill roadmap</a>
+  <a href="#activity"><span>↗</span>Activity</a>
+  <a href="{{ url_for('workspace.resume_tools', view='ats') }}">ATS analysis</a>
+  <a href="{{ url_for('workspace.recommendations') }}">AI recommendations</a>
+  <a href="{{ url_for('workspace.skill_gaps') }}">Skill gap analysis</a>
+  <a href="{{ url_for('workspace.learning') }}">Learning plan</a>
+  <a href="{{ url_for('workspace.saved_jobs') }}">Saved jobs</a>
+  <a href="{{ url_for('workspace.applications') }}">Applications</a>
+  <a href="{{ url_for('workspace.interview') }}">Interview prep</a>
+  <a href="{{ url_for('workspace.notifications') }}">Notifications</a>
+  <a href="{{ url_for('workspace.settings') }}">Settings</a>
+</nav>
+
+<section class="grid three dashboard-stats">
+  <a class="stat stat-link stat-jobs" href="{{ url_for('main.jobs') }}"><span class="stat-icon">↗</span><small>Active opportunities</small><strong>{{ jobs }}</strong><span>Explore job catalog →</span></a>
+  <a class="stat stat-link stat-resumes" href="#resume-library"><span class="stat-icon">▤</span><small>Resumes analyzed</small><strong>{{ resumes|length }}</strong><span>Review your uploads →</span></a>
+  <a class="stat stat-link stat-matches" href="{{ url_for('main.matches') }}"><span class="stat-icon">✦</span><small>Role matches</small><strong>{{ matches }}</strong><span>View your shortlist →</span></a>
+</section>
+
+<section class="dashboard-overview" id="overview">
+  <article class="panel progress-panel">
+    <div class="panel-heading"><div><p class="card-kicker">YOUR CAREER SNAPSHOT</p><h2>Profile progress</h2></div><span class="count-chip">{{ resumes|length }} {{ 'resume' if resumes|length == 1 else 'resumes' }}</span></div>
+    <div class="progress-overview">
+      <div class="progress-ring" role="progressbar" aria-label="Career profile completion" aria-valuenow="{{ profile_progress }}" aria-valuemin="0" aria-valuemax="100" style="--progress: {{ profile_progress }}%"><div><strong>{{ profile_progress }}%</strong><small>complete</small></div></div>
+      <div class="progress-copy"><strong>Small steps add up.</strong><p>Complete the checklist to get more value from your career workspace.</p><a class="text-link" href="{{ url_for('main.profile') }}">Keep your profile current <span aria-hidden="true">→</span></a></div>
+    </div>
+    <div class="checklist">
+      {% for label, complete in profile_steps %}
+      <div class="checklist-row"><span class="checklist-mark {{ 'is-done' if complete else '' }}">{{ '✓' if complete else '·' }}</span><span>{{ label }}</span><small>{{ 'Done' if complete else 'Next step' }}</small></div>
+      {% endfor %}
+    </div>
+  </article>
+  <article class="panel score-panel">
+    <div class="panel-heading"><div><p class="card-kicker">RESUME HEALTH</p><h2>Your quality score</h2></div><span class="panel-icon">↗</span></div>
+    <div class="score-summary"><strong>{{ "%.0f"|format(resumes[0].resume_score) if resumes else "—" }}<small>{% if resumes %}/100{% endif %}</small></strong><span>Latest resume</span></div>
+    {% if resumes %}
+    <div class="score-chart" aria-label="Resume scores, most recent first">
+      {% for resume in resumes[:5] %}
+      <div class="score-chart-column"><div class="score-chart-value">{{ "%.0f"|format(resume.resume_score) }}</div><div class="score-chart-track"><i style="height: {{ [resume.resume_score, 100]|min }}%"></i></div><small>{{ resume.created_at.strftime('%b %d') }}</small></div>
+      {% endfor %}
+    </div>
+    <div class="score-footnote"><span>Average across uploads</span><strong>{{ average_score }}%</strong></div>
+    {% else %}
+    <div class="score-empty"><span class="empty-icon">↑</span><p>Your resume score will appear here after your first analysis.</p></div>
+    {% endif %}
+  </article>
+</section>
+
+<section class="workspace-insights">
+  <article class="panel next-actions-panel">
+    <div class="panel-heading"><div><p class="card-kicker">PERSONALIZED FOR YOU</p><h2>Your next best steps</h2></div><span class="panel-icon">✦</span></div>
+    <p class="muted">A few ways to keep your career workspace moving.</p>
+    <div class="next-actions-list">
+      {% for action in next_actions %}
+      <article class="next-action-card">
+        <span class="next-action-icon action-{{ action.kind }}">{% if action.kind == 'resume' %}↑{% elif action.kind == 'match' %}✦{% elif action.kind == 'improve' %}↗{% else %}⌕{% endif %}</span>
+        <div><strong>{{ action.title }}</strong><p>{{ action.detail }}</p></div>
+        {% if action.resume_id %}
+        <button class="action-link" type="button" onclick="recommend({{ action.resume_id }})">{{ action.label }} <span aria-hidden="true">→</span></button>
+        {% else %}
+        <a class="action-link" href="{{ action.href }}">{{ action.label }} <span aria-hidden="true">→</span></a>
+        {% endif %}
+      </article>
+      {% endfor %}
+    </div>
+  </article>
+
+  <article class="panel activity-panel" id="activity">
+    <div class="panel-heading"><div><p class="card-kicker">YOUR RECENT PROGRESS</p><h2>Career activity</h2></div><span class="count-chip">{{ career_activity|length }} updates</span></div>
+    <div class="activity-timeline">
+      {% for activity in career_activity %}
+      <a class="activity-item" href="{{ activity.href }}">
+        <span class="activity-marker activity-{{ activity.kind }}">{% if activity.kind == 'resume' %}▤{% elif activity.kind == 'match' %}✦{% else %}◉{% endif %}</span>
+        <span class="activity-content"><strong>{{ activity.title }}</strong><small>{{ activity.detail }}</small></span>
+        <time datetime="{{ activity.date.isoformat() }}">{{ activity.date.strftime('%b %d') }}</time>
+      </a>
+      {% endfor %}
+    </div>
+  </article>
+</section>
+
+<section class="dashboard-columns">
+  <div class="panel upload-panel">
+    <div class="panel-heading"><div><p class="card-kicker">PROFILE BUILDER</p><h2>Analyze a resume</h2></div><span class="panel-icon">↑</span></div>
+    <p class="muted">Upload a PDF or DOCX to extract your skills and see how your experience maps to open roles.</p>
+    <form id="uploadForm" enctype="multipart/form-data" class="upload-form">
+      <label class="file-drop" for="resume"><span class="upload-symbol">↑</span><strong>Choose a resume to upload</strong><small>PDF or DOCX · up to 5 MB</small><input id="resume" name="resume" type="file" accept=".pdf,.docx" required></label>
+      <button class="btn" type="submit">Analyze resume <span aria-hidden="true">→</span></button>
+    </form>
+    <pre id="result" role="status" aria-live="polite"></pre>
+  </div>
+  <div class="panel skill-panel">
+    <div class="panel-heading"><div><p class="card-kicker">LATEST PROFILE</p><h2>Your detected skills</h2></div><span class="panel-icon">✦</span></div>
+    {% if skills %}
+      <p class="muted">From your latest resume, {{ resumes[0].filename }}.</p>
+      <div class="skill-cloud">{% for skill in skills %}<span class="badge">{{ skill }}</span>{% endfor %}</div>
+      <div class="insight-tip"><span>✦</span><p>Make sure your most relevant skills are easy to spot in the experience and project sections of your resume.</p></div>
+    {% else %}
+      <p class="muted">Upload a resume to see detected skills and get tailored job recommendations.</p>
+      <a class="text-link" href="#uploadForm">Build your profile <span aria-hidden="true">→</span></a>
+    {% endif %}
+  </div>
+</section>
+
+<section class="panel" id="resume-library">
+  <div class="panel-heading"><div><p class="card-kicker">YOUR DOCUMENTS</p><h2>Resume library</h2></div><span class="count-chip">{{ resumes|length }} saved</span></div>
+  {% for r in resumes %}
+  <div class="resume-row">
+    <div class="resume-file"><span class="file-icon">PDF</span><div><b>{{ r.filename }}</b><small>Analyzed {{ r.created_at.strftime('%b %d, %Y') }}</small></div></div>
+    <div class="resume-actions"><span class="score">{{ "%.0f"|format(r.resume_score) }}<small>/100</small></span><button class="small-btn" onclick="recommend({{ r.id }})">Find matching roles <span aria-hidden="true">→</span></button></div>
+  </div>
+  {% else %}
+  <div class="inline-empty"><span class="empty-icon">↑</span><div><strong>Your resume library is ready.</strong><p>Upload a resume to start building your profile.</p></div></div>
+  {% endfor %}
+</section>
+
+<section class="panel skills-roadmap" id="skill-roadmap">
+  <div class="panel-heading"><div><p class="card-kicker">YOUR DEVELOPMENT PLAN</p><h2>Skills worth strengthening</h2></div><a class="text-link" href="{{ url_for('main.jobs') }}">Explore roles <span aria-hidden="true">→</span></a></div>
+  {% if skill_gaps %}
+  <p class="muted">Skills most often listed as missing from your recent role matches. Prioritize the ones that align with your goals.</p>
+  <div class="gap-roadmap">
+    {% for skill, count in skill_gaps %}
+    <a class="gap-roadmap-item" href="{{ url_for('main.jobs', q=skill) }}"><span class="gap-roadmap-icon">{{ loop.index }}</span><div><strong>{{ skill }}</strong><small>Appears in {{ count }} recent {{ 'match' if count == 1 else 'matches' }}</small></div><span class="roadmap-tag">Explore →</span></a>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="inline-empty"><span class="empty-icon">✦</span><div><strong>Your skill roadmap will grow with your matches.</strong><p>Analyze your resume against active roles to see skills you could strengthen.</p></div></div>
+  {% endif %}
+</section>
+
+<section class="panel recommendations-panel">
+  <div class="panel-heading"><div><p class="card-kicker">CAREER OPPORTUNITIES</p><h2>Recent role matches</h2></div><a class="text-link" href="{{ url_for('main.matches') }}">All matches <span aria-hidden="true">→</span></a></div>
+  <div id="jobs"><p class="muted">{% if recent_matches %}Your recent recommendations are below. Analyze a resume again to refresh the matches.{% else %}Upload a resume and select “Find matching roles” to get personalized recommendations.{% endif %}</p>
+  {% for match, job in recent_matches %}
+    <article class="recommendation-row">
+      <div class="recommendation-company"><span class="company-avatar">{{ job.company[:1]|upper }}</span><div><strong>{{ job.title }}</strong><small>{{ job.company }} · {{ job.location }}</small></div></div>
+      <span class="recommendation-score">{{ "%.0f"|format(match.final_score) }}% <small>match</small></span>
+      <a class="text-link" href="{{ url_for('main.matches') }}">Details →</a>
+    </article>
+  {% endfor %}
+  </div>
+</section>
+<nav class="dashboard-shortcuts" aria-label="Career workspace shortcuts">
+  <a href="{{ url_for('main.jobs') }}"><span>⌕</span><div><strong>Explore opportunities</strong><small>Search the live job catalog</small></div><b>→</b></a>
+  <a href="{{ url_for('main.matches') }}"><span>✦</span><div><strong>Review your matches</strong><small>See match scores and skill gaps</small></div><b>→</b></a>
+  <a href="{{ url_for('main.profile') }}"><span>◉</span><div><strong>Update your profile</strong><small>Keep your account up to date</small></div><b>→</b></a>
+</nav>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,433 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} — InterviewIQ{% endblock %}
+{% block main_class %}page-shell resources-shell{% endblock %}
+{% block content %}
+<section class="page-intro tool-intro">
+  <p class="eyebrow">INTERVIEWIQ CAREER TOOL</p>
+  <h1>{{ title }}</h1>
+  {% if tool == 'resume-builder' %}
+    <p>Build a role-focused resume with a live preview, reusable sections, three clean layouts, and an optional recognized-skill keyword check. Your information is not saved.</p>
+  {% elif tool == 'europass-cv-builder' %}
+    <p>Organize your experience in a Europass-inspired CV structure. This is an independent draft builder and does not create an official Europass document.</p>
+  {% elif tool == 'job-fit-checker' %}
+    <p>Compare pasted resume text with a job description using InterviewIQ's explainable local matching signals. Your pasted text is not stored.</p>
+  {% elif tool == 'salary-insights' %}
+    <p>Compare annual compensation figures you provide. InterviewIQ does not have a live salary database, so this tool does not invent market benchmarks.</p>
+  {% elif tool == 'cover-letter-generator' %}
+    <p>Create a first draft using your own role, company, and evidence. Review it for accuracy and personalize it before sending.</p>
+  {% else %}
+    <p>Build a focused LinkedIn headline and About-section draft from your own target role and strengths.</p>
+  {% endif %}
+  {% if tool in ['resume-builder', 'europass-cv-builder'] %}
+  <img class="tool-intro-art" src="{{ url_for('static', filename='images/career-resume.svg') }}" alt="" width="720" height="440" fetchpriority="low">
+  {% elif tool == 'job-fit-checker' %}
+  <img class="tool-intro-art" src="{{ url_for('static', filename='images/career-job-search.svg') }}" alt="" width="720" height="440" fetchpriority="low">
+  {% else %}
+  <img class="tool-intro-art" src="{{ url_for('static', filename='images/career-learning.svg') }}" alt="" width="720" height="440" fetchpriority="low">
+  {% endif %}
+</section>
+
+{% if error %}<div class="tool-error" role="alert">{{ error }}</div>{% endif %}
+
+{% if tool == 'resume-builder' %}
+{% set work_entries = form_data.get('work_entries', [{'work_role': '', 'work_company': '', 'work_dates': '', 'work_achievements': ''}]) %}
+{% set education_entries = form_data.get('education_entries', [{'education_degree': '', 'education_school': '', 'education_dates': '', 'education_details': ''}]) %}
+{% set project_entries = form_data.get('project_entries', [{'project_name': '', 'project_technologies': '', 'project_details': ''}]) %}
+<form class="resource-form resume-builder-form" method="post">
+  <div class="resume-builder-heading">
+    <div><p class="eyebrow">BUILD WITH YOUR OWN EVIDENCE</p><h2>Your resume, section by section.</h2><p>Complete what you can. Nothing is saved; copy or download the draft before you leave.</p></div>
+    <label class="resume-template-picker">Layout
+      <select name="template" data-resume-field>
+        <option value="modern" {{ 'selected' if form_data.get('template', 'modern') == 'modern' else '' }}>Modern · clear accent</option>
+        <option value="classic" {{ 'selected' if form_data.get('template') == 'classic' else '' }}>Classic · traditional</option>
+        <option value="compact" {{ 'selected' if form_data.get('template') == 'compact' else '' }}>Compact · space-saving</option>
+      </select>
+    </label>
+  </div>
+  <div class="resume-builder-layout">
+    <div class="resume-builder-editor">
+      <section class="resume-builder-section">
+        <div class="resume-builder-section-heading"><span>01</span><div><h3>Start with your target</h3><p>Make the role you want easy to spot.</p></div></div>
+        <div class="resource-form-grid">
+          <label>Full name<input name="name" data-resume-field value="{{ form_data.get('name', '') }}" maxlength="300" autocomplete="name" required></label>
+          <label>Target role<input name="role" data-resume-field value="{{ form_data.get('role', '') }}" maxlength="300" placeholder="e.g. Data Analyst" required></label>
+          <label>Email<input name="email" data-resume-field type="email" value="{{ form_data.get('email', '') }}" maxlength="300" autocomplete="email"></label>
+          <label>Phone<input name="phone" data-resume-field value="{{ form_data.get('phone', '') }}" maxlength="100" autocomplete="tel"></label>
+          <label class="form-wide">Location or professional link<input name="location" data-resume-field value="{{ form_data.get('location', '') }}" maxlength="300" placeholder="City, region · portfolio or LinkedIn"></label>
+        </div>
+      </section>
+
+      <section class="resume-builder-section">
+        <div class="resume-builder-section-heading"><span>02</span><div><h3>Your profile</h3><p>Lead with strengths supported by the experience below.</p></div></div>
+        <label class="resume-builder-field">Professional summary<textarea name="summary" data-resume-field rows="4" maxlength="5000" placeholder="In 2–4 sentences, describe your focus, relevant experience, and strengths.">{{ form_data.get('summary', '') }}</textarea><small>Keep it specific. Avoid claims you cannot support.</small></label>
+        <label class="resume-builder-field">Skills<textarea name="skills" data-resume-field rows="3" maxlength="5000" placeholder="Python, SQL, stakeholder communication">{{ form_data.get('skills', '') }}</textarea><small>Use commas or new lines. Prioritize skills relevant to your target role.</small></label>
+      </section>
+
+      <section class="resume-builder-section">
+        <div class="resume-builder-section-heading"><span>03</span><div><h3>Work experience</h3><p>Show scope, actions, and outcomes. Add up to six roles.</p></div></div>
+        <div class="resume-entry-list" data-entry-list="work_entries">
+          {% for entry in work_entries %}
+          <fieldset class="resume-entry">
+            <legend>Experience {{ loop.index }}</legend>
+            <button class="resume-entry-remove" type="button" aria-label="Remove experience {{ loop.index }}">Remove</button>
+            <div class="resource-form-grid">
+              <label>Job title<input name="work_role" data-resume-field value="{{ entry.get('work_role', '') }}" maxlength="5000" placeholder="Your role"></label>
+              <label>Company<input name="work_company" data-resume-field value="{{ entry.get('work_company', '') }}" maxlength="5000" placeholder="Employer"></label>
+              <label class="form-wide">Dates<input name="work_dates" data-resume-field value="{{ entry.get('work_dates', '') }}" maxlength="5000" placeholder="2022–2025 · Remote"></label>
+              <label class="form-wide">Achievements and responsibilities<textarea name="work_achievements" data-resume-field rows="4" maxlength="5000" placeholder="One accomplishment per line. Use accurate numbers where you have them.">{{ entry.get('work_achievements', '') }}</textarea></label>
+            </div>
+          </fieldset>
+          {% endfor %}
+        </div>
+        <button class="btn btn-outline resume-entry-add" type="button" data-add-entry="work_entries">＋ Add experience</button>
+      </section>
+
+      <section class="resume-builder-section">
+        <div class="resume-builder-section-heading"><span>04</span><div><h3>Education</h3><p>Add your most relevant qualifications. Up to six entries.</p></div></div>
+        <div class="resume-entry-list" data-entry-list="education_entries">
+          {% for entry in education_entries %}
+          <fieldset class="resume-entry">
+            <legend>Education {{ loop.index }}</legend>
+            <button class="resume-entry-remove" type="button" aria-label="Remove education {{ loop.index }}">Remove</button>
+            <div class="resource-form-grid">
+              <label>Degree or qualification<input name="education_degree" data-resume-field value="{{ entry.get('education_degree', '') }}" maxlength="5000"></label>
+              <label>School or institution<input name="education_school" data-resume-field value="{{ entry.get('education_school', '') }}" maxlength="5000"></label>
+              <label class="form-wide">Dates<input name="education_dates" data-resume-field value="{{ entry.get('education_dates', '') }}" maxlength="5000" placeholder="2020–2024"></label>
+              <label class="form-wide">Relevant details<textarea name="education_details" data-resume-field rows="2" maxlength="5000" placeholder="Relevant coursework, honors, or focus areas">{{ entry.get('education_details', '') }}</textarea></label>
+            </div>
+          </fieldset>
+          {% endfor %}
+        </div>
+        <button class="btn btn-outline resume-entry-add" type="button" data-add-entry="education_entries">＋ Add education</button>
+      </section>
+
+      <section class="resume-builder-section">
+        <div class="resume-builder-section-heading"><span>05</span><div><h3>Projects</h3><p>Include projects that demonstrate relevant skills. Up to six entries.</p></div></div>
+        <div class="resume-entry-list" data-entry-list="project_entries">
+          {% for entry in project_entries %}
+          <fieldset class="resume-entry">
+            <legend>Project {{ loop.index }}</legend>
+            <button class="resume-entry-remove" type="button" aria-label="Remove project {{ loop.index }}">Remove</button>
+            <div class="resource-form-grid">
+              <label>Project name<input name="project_name" data-resume-field value="{{ entry.get('project_name', '') }}" maxlength="5000"></label>
+              <label>Tools or technologies<input name="project_technologies" data-resume-field value="{{ entry.get('project_technologies', '') }}" maxlength="5000"></label>
+              <label class="form-wide">What you built or achieved<textarea name="project_details" data-resume-field rows="3" maxlength="5000">{{ entry.get('project_details', '') }}</textarea></label>
+            </div>
+          </fieldset>
+          {% endfor %}
+        </div>
+        <button class="btn btn-outline resume-entry-add" type="button" data-add-entry="project_entries">＋ Add project</button>
+      </section>
+
+      <section class="resume-builder-section">
+        <div class="resume-builder-section-heading"><span>06</span><div><h3>Finishing details</h3><p>Add credentials, links, or a target job description for a keyword check.</p></div></div>
+        <label class="resume-builder-field">Certifications<textarea name="certifications" data-resume-field rows="2" maxlength="5000" placeholder="One certification per line">{{ form_data.get('certifications', '') }}</textarea></label>
+        <label class="resume-builder-field">Portfolio and professional links<textarea name="links" data-resume-field rows="2" maxlength="5000" placeholder="https://your-portfolio.example">{{ form_data.get('links', '') }}</textarea></label>
+        <label class="resume-builder-field">Target job description <span class="resume-optional">(optional)</span><textarea name="job_description" rows="5" maxlength="5000" placeholder="Paste a job description to see which recognized skills are already represented in your draft.">{{ form_data.get('job_description', '') }}</textarea><small>Only recognized skill terms are compared. This is a keyword check, not an ATS score or a hiring prediction.</small></label>
+      </section>
+      <button class="btn resume-generate-button" type="submit">Build my resume preview <span aria-hidden="true">→</span></button>
+    </div>
+
+    <aside class="resume-builder-sidebar">
+      <section class="resume-progress-card" aria-live="polite">
+        <div><strong>Draft readiness</strong><span data-resume-progress-label>0 of 7 sections</span></div>
+        <div class="resume-progress-track" role="progressbar" aria-label="Resume draft sections completed" aria-valuemin="0" aria-valuemax="7" aria-valuenow="0"><i data-resume-progress-bar></i></div>
+        <p>Progress tracks filled sections only. It is not a resume quality or ATS score.</p>
+      </section>
+      <article class="resume-paper resume-template-modern" data-resume-preview aria-label="Live resume preview">
+        <header class="resume-paper-header"><h2 data-preview-name>Your Name</h2><p data-preview-role>Target Role</p><small data-preview-contact>Add contact details</small></header>
+        <div class="resume-paper-sections" data-preview-sections><p class="resume-paper-placeholder">Your resume preview will build as you add details.</p></div>
+      </article>
+      <p class="resume-preview-note">Preview uses text only. Keep the exported resume easy to read and review all details before using it.</p>
+    </aside>
+  </div>
+</form>
+<template data-entry-template="work_entries">
+  <fieldset class="resume-entry"><legend>New experience</legend><button class="resume-entry-remove" type="button" aria-label="Remove experience">Remove</button><div class="resource-form-grid">
+    <label>Job title<input name="work_role" data-resume-field maxlength="5000" placeholder="Your role"></label><label>Company<input name="work_company" data-resume-field maxlength="5000" placeholder="Employer"></label>
+    <label class="form-wide">Dates<input name="work_dates" data-resume-field maxlength="5000" placeholder="2022–2025 · Remote"></label><label class="form-wide">Achievements and responsibilities<textarea name="work_achievements" data-resume-field rows="4" maxlength="5000" placeholder="One accomplishment per line. Use accurate numbers where you have them."></textarea></label>
+  </div></fieldset>
+</template>
+<template data-entry-template="education_entries">
+  <fieldset class="resume-entry"><legend>New education</legend><button class="resume-entry-remove" type="button" aria-label="Remove education">Remove</button><div class="resource-form-grid">
+    <label>Degree or qualification<input name="education_degree" data-resume-field maxlength="5000"></label><label>School or institution<input name="education_school" data-resume-field maxlength="5000"></label>
+    <label class="form-wide">Dates<input name="education_dates" data-resume-field maxlength="5000" placeholder="2020–2024"></label><label class="form-wide">Relevant details<textarea name="education_details" data-resume-field rows="2" maxlength="5000" placeholder="Relevant coursework, honors, or focus areas"></textarea></label>
+  </div></fieldset>
+</template>
+<template data-entry-template="project_entries">
+  <fieldset class="resume-entry"><legend>New project</legend><button class="resume-entry-remove" type="button" aria-label="Remove project">Remove</button><div class="resource-form-grid">
+    <label>Project name<input name="project_name" data-resume-field maxlength="5000"></label><label>Tools or technologies<input name="project_technologies" data-resume-field maxlength="5000"></label>
+    <label class="form-wide">What you built or achieved<textarea name="project_details" data-resume-field rows="3" maxlength="5000"></textarea></label>
+  </div></fieldset>
+</template>
+{% elif tool == 'europass-cv-builder' %}
+<form class="resource-form" method="post">
+  <div class="resource-form-grid">
+    <label>Full name<input name="name" value="{{ form_data.get('name', '') }}" maxlength="300" required></label>
+    <label>Target role<input name="role" value="{{ form_data.get('role', '') }}" maxlength="300" required></label>
+    <label>Email<input name="email" type="email" value="{{ form_data.get('email', '') }}" maxlength="300"></label>
+    <label>Phone<input name="phone" value="{{ form_data.get('phone', '') }}" maxlength="100"></label>
+    <label>Location<input name="location" value="{{ form_data.get('location', '') }}" maxlength="300"></label>
+    {% if tool == 'europass-cv-builder' %}
+    <label>Nationality (optional)<input name="nationality" value="{{ form_data.get('nationality', '') }}" maxlength="300"></label>
+    <label>Date of birth (optional)<input name="date_of_birth" value="{{ form_data.get('date_of_birth', '') }}" maxlength="100" placeholder="DD/MM/YYYY"></label>
+    {% endif %}
+  </div>
+  <label>Professional summary<textarea name="summary" rows="4" maxlength="10000">{{ form_data.get('summary', '') }}</textarea></label>
+  <label>Skills<textarea name="skills" rows="3" maxlength="10000" placeholder="Separate skills with commas">{{ form_data.get('skills', '') }}</textarea></label>
+  <label>Experience<textarea name="experience" rows="6" maxlength="10000" placeholder="Role, employer, dates, actions, and results">{{ form_data.get('experience', '') }}</textarea></label>
+  <label>Education<textarea name="education" rows="4" maxlength="10000">{{ form_data.get('education', '') }}</textarea></label>
+  <label>Projects<textarea name="projects" rows="4" maxlength="10000">{{ form_data.get('projects', '') }}</textarea></label>
+  {% if tool == 'europass-cv-builder' %}
+  <div class="resource-form-grid">
+    <label>Languages<textarea name="languages" rows="3" maxlength="10000" placeholder="List languages and your level">{{ form_data.get('languages', '') }}</textarea></label>
+    <label>Digital skills<textarea name="digital_skills" rows="3" maxlength="10000">{{ form_data.get('digital_skills', '') }}</textarea></label>
+  </div>
+  {% endif %}
+  <button class="btn" type="submit">Generate my draft <span aria-hidden="true">→</span></button>
+</form>
+{% elif tool == 'job-fit-checker' %}
+<form class="resource-form" method="post">
+  <label>Resume text<textarea name="resume_text" rows="12" maxlength="20000" required placeholder="Paste the resume text you want to compare">{{ form_data.get('resume_text', '') }}</textarea></label>
+  <label>Job description<textarea name="job_description" rows="10" maxlength="20000" required placeholder="Paste the complete job description">{{ form_data.get('job_description', '') }}</textarea></label>
+  <button class="btn" type="submit">Check job fit <span aria-hidden="true">→</span></button>
+</form>
+{% elif tool == 'salary-insights' %}
+<form class="resource-form salary-form" method="post">
+  <label>Currency<select name="currency">
+    {% for currency in ['USD', 'EUR', 'GBP', 'INR', 'CAD', 'AUD'] %}<option value="{{ currency }}" {% if form_data.get('currency', 'USD') == currency %}selected{% endif %}>{{ currency }}</option>{% endfor %}
+  </select></label>
+  <label>Current annual compensation<input type="number" name="current_salary" min="0.01" step="0.01" value="{{ form_data.get('current_salary', '') }}" required></label>
+  <label>Target annual compensation<input type="number" name="target_salary" min="0.01" step="0.01" value="{{ form_data.get('target_salary', '') }}" required></label>
+  <button class="btn" type="submit">Compare compensation <span aria-hidden="true">→</span></button>
+</form>
+<p class="resource-disclaimer">Compare like-for-like annual amounts in the same currency. Consider location, seniority, total benefits, and reliable local salary sources when evaluating an offer.</p>
+{% elif tool == 'cover-letter-generator' %}
+<form class="resource-form" method="post">
+  <div class="resource-form-grid">
+    <label>Your name<input name="name" value="{{ form_data.get('name', '') }}" maxlength="300" required></label>
+    <label>Target role<input name="role" value="{{ form_data.get('role', '') }}" maxlength="300" required></label>
+    <label>Company<input name="company" value="{{ form_data.get('company', '') }}" maxlength="300" required></label>
+  </div>
+  <label>Relevant experience or achievement<textarea name="evidence" rows="5" maxlength="5000" placeholder="Use specific, accurate evidence">{{ form_data.get('evidence', '') }}</textarea></label>
+  <label>Why this role or company?<textarea name="motivation" rows="4" maxlength="5000">{{ form_data.get('motivation', '') }}</textarea></label>
+  <button class="btn" type="submit">Generate cover letter <span aria-hidden="true">→</span></button>
+</form>
+{% else %}
+<form class="resource-form" method="post">
+  <div class="resource-form-grid">
+    <label>Your name<input name="name" value="{{ form_data.get('name', '') }}" maxlength="300"></label>
+    <label>Target role<input name="role" value="{{ form_data.get('role', '') }}" maxlength="300" required></label>
+    <label>Key skills<input name="skills" value="{{ form_data.get('skills', '') }}" maxlength="1000" placeholder="Comma-separated"></label>
+  </div>
+  <label>Current About-section content or experience<textarea name="about" rows="7" maxlength="5000">{{ form_data.get('about', '') }}</textarea></label>
+  <button class="btn" type="submit">Create profile draft <span aria-hidden="true">→</span></button>
+</form>
+{% endif %}
+
+{% if result %}
+<section class="tool-result {{ 'resume-generated-result' if tool == 'resume-builder' else '' }}" aria-live="polite">
+  {% if tool == 'resume-builder' %}
+  <p class="eyebrow">YOUR RESUME DRAFT</p>
+  <h2>Review your resume before using it.</h2>
+  <p>This is your content arranged in a resume layout. Check every detail for accuracy and tailor it to each opportunity.</p>
+  {% if alignment and alignment.checked %}
+  <div class="resume-keyword-check">
+    <div><span class="card-kicker">RECOGNIZED SKILLS IN THE JOB POSTING</span><strong>{{ alignment.matched|length }} of {{ alignment.matched|length + alignment.missing|length }} represented in your draft</strong></div>
+    <p>This is a simple known-skill keyword check, not an ATS score or a measure of your ability.</p>
+    {% if alignment.matched %}<div class="matched-skill-list">{% for skill in alignment.matched %}<span class="matched-skill-chip"><span aria-hidden="true">✓</span>{{ skill }}</span>{% endfor %}</div>{% endif %}
+    {% if alignment.missing %}<div class="resume-keyword-gaps"><strong>Posting terms not found in your draft:</strong><div class="match-example-tags">{% for skill in alignment.missing %}<span>{{ skill }}</span>{% endfor %}</div><small>If these reflect your experience, consider making that evidence clearer. Don't add skills you do not have.</small></div>{% endif %}
+  </div>
+  {% endif %}
+  <article class="resume-paper resume-generated-paper resume-template-{{ resume_data.template }}">
+    <header class="resume-paper-header"><h2>{{ resume_data.name }}</h2><p>{{ resume_data.role }}</p>{% if resume_data.contact %}<small>{{ resume_data.contact }}</small>{% endif %}</header>
+    <div class="resume-paper-sections">
+      {% for section in resume_data.sections %}
+      <section class="resume-paper-section"><h3>{{ section.title }}</h3>
+        {% if section.text %}<p>{{ section.text }}</p>{% endif %}
+        {% if section.skills %}<p class="resume-paper-skills">{{ section.skills|join(' · ') }}</p>{% endif %}
+        {% for item in section.get('items', []) %}
+        <article class="resume-paper-item">
+          {% if item.heading %}<div><strong>{{ item.heading }}</strong>{% if item.dates %}<span>{{ item.dates }}</span>{% endif %}</div>{% endif %}
+          {% if item.details %}<p>{{ item.details }}</p>{% endif %}
+        </article>
+        {% endfor %}
+      </section>
+      {% endfor %}
+    </div>
+  </article>
+  <button class="btn btn-outline" type="button" onclick="window.print()">Print or save as PDF</button>
+  <details class="resume-plain-text"><summary>View plain-text version</summary><textarea class="generated-output" readonly rows="16">{{ result }}</textarea></details>
+  {% elif tool == 'job-fit-checker' %}
+  <p class="eyebrow">EXPLAINABLE ROLE COMPARISON</p>
+  <h2>{{ match.final_score|round|int }}% overall match</h2>
+  <p>Matching method: {{ match.matching_method }}</p>
+  <div class="match-breakdown-grid">
+    <div><span>Text similarity</span><strong>{{ match.semantic_score|round|int }}%</strong></div>
+    <div><span>Technical skills</span><strong>{{ match.skill_score|round|int }}%</strong></div>
+    <div><span>Experience</span><strong>{{ match.experience_score|round|int }}%</strong></div>
+    <div><span>Education</span><strong>{{ match.education_score|round|int }}%</strong></div>
+    <div><span>Project evidence</span><strong>{{ match.project_score|round|int }}%</strong></div>
+  </div>
+  <div class="match-skills-grid">
+    <div><h3>Matched skills</h3>{% if match.matched_skills %}<p>{{ match.matched_skills|join(', ') }}</p>{% else %}<p>No matching skills were detected.</p>{% endif %}</div>
+    <div><h3>Potential skill gaps</h3>{% if match.missing_skills %}<p>{{ match.missing_skills|join(', ') }}</p>{% else %}<p>No listed skills were detected as missing.</p>{% endif %}</div>
+  </div>
+  {% elif tool == 'salary-insights' %}
+  <p class="eyebrow">YOUR INPUT COMPARISON</p><h2>{{ result.percentage }}% change</h2>
+  <div class="match-breakdown-grid">
+    <div><span>Current annual</span><strong>{{ result.currency }} {{ result.current }}</strong></div>
+    <div><span>Target annual</span><strong>{{ result.currency }} {{ result.target }}</strong></div>
+    <div><span>Difference</span><strong>{{ result.currency }} {{ result.difference }}</strong></div>
+  </div>
+  {% elif tool == 'linkedin-optimizer' %}
+  <p class="eyebrow">PROFILE DRAFT</p><h2>Suggested headline</h2><textarea class="generated-output" readonly rows="2">{{ result.headline }}</textarea>
+  <h2>About section</h2><textarea class="generated-output" readonly rows="8">{{ result.about }}</textarea>
+  {% else %}
+  <p class="eyebrow">YOUR PERSONALIZED DRAFT</p><h2>{% if tool == 'cover-letter-generator' %}Cover letter{% else %}{{ title }} preview{% endif %}</h2>
+  <textarea class="generated-output" readonly rows="16">{{ result }}</textarea>
+  {% endif %}
+  {% if tool in ['resume-builder', 'europass-cv-builder', 'cover-letter-generator'] %}
+  <button class="btn btn-outline copy-draft" type="button">Copy draft</button>
+  <form method="post" action="{{ url_for('resources.download_draft') }}">
+    <input type="hidden" name="draft_type" value="{% if tool == 'resume-builder' %}resume{% elif tool == 'europass-cv-builder' %}europass-cv{% else %}cover-letter{% endif %}">
+    <textarea hidden name="draft">{{ result }}</textarea>
+    <button class="btn btn-outline" type="submit">Download draft</button>
+  </form>
+  {% elif tool == 'linkedin-optimizer' %}
+  <button class="btn btn-outline copy-draft" data-draft="0" type="button">Copy headline</button>
+  <button class="btn btn-outline copy-draft" data-draft="1" type="button">Copy About section</button>
+  <form method="post" action="{{ url_for('resources.download_draft') }}">
+    <input type="hidden" name="draft_type" value="linkedin-profile">
+    <textarea hidden name="draft">{{ result.headline }}
+
+{{ result.about }}</textarea>
+    <button class="btn btn-outline" type="submit">Download profile draft</button>
+  </form>
+  {% endif %}
+</section>
+{% endif %}
+<p class="resource-disclaimer">Review every draft for accuracy, privacy, accessibility, and role-specific requirements. InterviewIQ does not save information submitted to these public tools.</p>
+<script>
+const resumeBuilderForm = document.querySelector(".resume-builder-form");
+if (resumeBuilderForm) {
+  const preview = resumeBuilderForm.querySelector("[data-resume-preview]");
+  const previewName = preview.querySelector("[data-preview-name]");
+  const previewRole = preview.querySelector("[data-preview-role]");
+  const previewContact = preview.querySelector("[data-preview-contact]");
+  const previewSections = preview.querySelector("[data-preview-sections]");
+  const progress = resumeBuilderForm.querySelector(".resume-progress-track");
+  const progressLabel = resumeBuilderForm.querySelector("[data-resume-progress-label]");
+  const progressBar = resumeBuilderForm.querySelector("[data-resume-progress-bar]");
+  const readValue = (name) => resumeBuilderForm.querySelector(`[name="${name}"]`)?.value.trim() || "";
+  const appendText = (parent, tag, text, className) => {
+    const element = document.createElement(tag);
+    element.textContent = text;
+    if (className) element.className = className;
+    parent.append(element);
+    return element;
+  };
+  const updateResumePreview = () => {
+    const name = readValue("name");
+    const role = readValue("role");
+    const contact = ["email", "phone", "location"].map(readValue).filter(Boolean).join(" · ");
+    previewName.textContent = name || "Your Name";
+    previewRole.textContent = role || "Target Role";
+    previewContact.textContent = contact || "Add contact details";
+    preview.className = `resume-paper resume-template-${readValue("template") || "modern"}`;
+    previewSections.replaceChildren();
+
+    const addSection = (title) => {
+      const section = document.createElement("section");
+      section.className = "resume-paper-section";
+      appendText(section, "h3", title);
+      previewSections.append(section);
+      return section;
+    };
+    const summary = readValue("summary");
+    if (summary) appendText(addSection("Professional summary"), "p", summary);
+    const skills = readValue("skills").split(/[,\n]/).map((item) => item.trim()).filter(Boolean);
+    if (skills.length) appendText(addSection("Skills"), "p", skills.join(" · "), "resume-paper-skills");
+
+    [
+      { list: "work_entries", fields: ["work_role", "work_company", "work_dates", "work_achievements"], heading: (v) => [v[0], v[1]].filter(Boolean).join(" — ") },
+      { list: "education_entries", fields: ["education_degree", "education_school", "education_dates", "education_details"], heading: (v) => [v[0], v[1]].filter(Boolean).join(" — ") },
+      { list: "project_entries", fields: ["project_name", "project_technologies", "project_details"], heading: (v) => v[0] },
+    ].forEach((group) => {
+      const entries = [...resumeBuilderForm.querySelectorAll(`[data-entry-list="${group.list}"] .resume-entry`)];
+      const rows = entries.map((entry) => group.fields.map((field) => entry.querySelector(`[name="${field}"]`)?.value.trim() || ""));
+      const populated = rows.filter((row) => row.some(Boolean));
+      if (!populated.length) return;
+      const title = group.list === "work_entries" ? "Experience" : group.list === "education_entries" ? "Education" : "Selected projects";
+      const section = addSection(title);
+      populated.forEach((row) => {
+        const item = document.createElement("article");
+        item.className = "resume-paper-item";
+        const heading = group.heading(row);
+        if (heading) appendText(item, "strong", heading);
+        const datesIndex = group.list === "work_entries" ? 2 : group.list === "education_entries" ? 2 : 1;
+        if (row[datesIndex]) appendText(item, "span", row[datesIndex], "resume-paper-meta");
+        const detailsIndex = group.fields.length - 1;
+        if (row[detailsIndex]) appendText(item, "p", row[detailsIndex]);
+        section.append(item);
+      });
+    });
+
+    [["Certifications", "certifications"], ["Additional links", "links"]].forEach(([title, field]) => {
+      const items = readValue(field).split("\n").map((item) => item.trim()).filter(Boolean);
+      if (items.length) appendText(addSection(title), "p", items.join(" · "));
+    });
+    if (!previewSections.childElementCount) appendText(previewSections, "p", "Your resume preview will build as you add details.", "resume-paper-placeholder");
+
+    const completed = [
+      Boolean(name && role),
+      Boolean(contact),
+      Boolean(summary),
+      Boolean(skills.length),
+      Boolean(resumeBuilderForm.querySelector('[data-entry-list="work_entries"] .resume-entry [name="work_role"]')?.value.trim()),
+      Boolean(resumeBuilderForm.querySelector('[data-entry-list="education_entries"] .resume-entry [name="education_degree"]')?.value.trim()),
+      Boolean(resumeBuilderForm.querySelector('[data-entry-list="project_entries"] .resume-entry [name="project_name"]')?.value.trim() || readValue("certifications") || readValue("links")),
+    ].filter(Boolean).length;
+    progress.setAttribute("aria-valuenow", String(completed));
+    progressLabel.textContent = `${completed} of 7 sections`;
+    progressBar.style.width = `${completed / 7 * 100}%`;
+  };
+
+  resumeBuilderForm.addEventListener("input", updateResumePreview);
+  resumeBuilderForm.addEventListener("change", updateResumePreview);
+  resumeBuilderForm.addEventListener("click", (event) => {
+    const addButton = event.target.closest("[data-add-entry]");
+    const removeButton = event.target.closest(".resume-entry-remove");
+    if (addButton) {
+      const list = resumeBuilderForm.querySelector(`[data-entry-list="${addButton.dataset.addEntry}"]`);
+      if (list.children.length >= 6) return;
+      const template = document.querySelector(`template[data-entry-template="${addButton.dataset.addEntry}"]`);
+      list.append(template.content.cloneNode(true));
+      list.lastElementChild.querySelector("input, textarea")?.focus();
+    } else if (removeButton) {
+      const list = removeButton.closest(".resume-entry-list");
+      if (list.children.length > 1) removeButton.closest(".resume-entry").remove();
+    }
+    updateResumePreview();
+  });
+  updateResumePreview();
+}
+
+document.querySelectorAll(".copy-draft").forEach((button) => {
+  button.addEventListener("click", async () => {
+    const fields = [...document.querySelectorAll(".generated-output")];
+    const index = Number(button.dataset.draft);
+    const text = button.dataset.draft !== undefined ? fields[index].value : fields.map((field) => field.value).join("\n\n");
+    try {
+      await navigator.clipboard.writeText(text);
+      button.textContent = "Copied";
+    } catch {
+      const field = fields[button.dataset.draft === undefined ? 0 : index];
+      field.focus();
+      field.select();
+      button.textContent = "Select and copy";
+    }
+  });
+});
+</script>
+{% endblock %}

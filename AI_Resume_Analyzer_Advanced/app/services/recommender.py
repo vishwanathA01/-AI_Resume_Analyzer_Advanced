@@ -3,7 +3,9 @@ from app.services.matcher import calculate_match
 def recommend(resume_text, jobs, limit=10):
     results = []
     for job in jobs:
-        m = calculate_match(resume_text, job.description, job.required_skills)
+        m = calculate_match(
+            resume_text, job.description, job.required_skills, job.min_experience
+        )
         results.append({
             "job": job,
             **m

@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+{% block title %}Community — InterviewIQ{% endblock %}
+{% block main_class %}page-shell community-page{% endblock %}
+{% macro member_avatar(member, size='') -%}
+<span class="community-avatar {{ size }}">
+  {% if member.profile_picture %}
+  <img src="{{ url_for('main.profile_photo', filename=member.profile_picture.filename) }}" alt="">
+  {% else %}
+  <span>{{ member.name[:1]|upper }}</span>
+  {% endif %}
+</span>
+{%- endmacro %}
+{% block content %}
+<section class="community-hero">
+  <div>
+    <p class="eyebrow">A SPACE TO GROW TOGETHER</p>
+    <h1>Welcome to your community.</h1>
+    <p>Share a career win, ask a thoughtful question, and learn from people moving forward alongside you.</p>
+  </div>
+  <div class="community-hero-side">
+    <img src="{{ url_for('static', filename='images/career-community.svg') }}" alt="Illustration of community members exchanging supportive messages" width="720" height="440">
+    <div class="community-member-count"><span aria-hidden="true">◎</span><div><strong>{{ member_count }}</strong><small>community members</small></div></div>
+  </div>
+</section>
+
+<div class="community-layout">
+  <section class="community-feed" aria-label="Community conversation feed">
+    <form class="community-composer panel" method="post" action="{{ url_for('main.create_community_post') }}">
+      {{ member_avatar(user, 'community-avatar-large') }}
+      <div class="community-composer-main">
+        <label for="community-post-body">What would you like to share?</label>
+        <textarea id="community-post-body" name="body" maxlength="1200" rows="4" placeholder="Ask for advice, share something you learned, or celebrate a small win..." required></textarea>
+        <div class="community-composer-footer">
+          <small>Keep it kind. Don’t share private contact or account details.</small>
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+          <button class="btn" type="submit">Share with community <span aria-hidden="true">→</span></button>
+        </div>
+      </div>
+    </form>
+
+    <div class="community-feed-heading">
+      <div><p class="card-kicker">MEMBER CONVERSATIONS</p><h2>Community feed</h2></div>
+      <span>Latest updates</span>
+    </div>
+    {% for item in feed %}
+    <article class="community-post panel" id="post-{{ item.post.id }}">
+      <header class="community-post-header">
+        {{ member_avatar(item.post.author) }}
+        <div class="community-author">
+          <strong>{{ item.post.author.name }}{% if item.post.user_id == user.id %}<span class="community-you">You</span>{% endif %}</strong>
+          <time datetime="{{ item.post.created_at.isoformat() }}">{{ item.post.created_at.strftime('%b %d, %Y · %I:%M %p') }}</time>
+        </div>
+        {% if item.post.user_id == user.id %}
+        <form method="post" action="{{ url_for('main.delete_community_post', post_id=item.post.id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+          <button class="community-delete" type="submit" aria-label="Delete your post">Delete</button>
+        </form>
+        {% endif %}
+      </header>
+      <p class="community-post-body">{{ item.post.body }}</p>
+      <div class="community-post-actions">
+        <form method="post" action="{{ url_for('main.toggle_community_like', post_id=item.post.id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+          <button class="community-like {{ 'is-liked' if item.liked else '' }}" type="submit" aria-pressed="{{ 'true' if item.liked else 'false' }}">
+            <span aria-hidden="true">{{ '♥' if item.liked else '♡' }}</span> {{ item.like_count }} {{ 'like' if item.like_count == 1 else 'likes' }}
+          </button>
+        </form>
+        <span class="community-comment-count"><span aria-hidden="true">▤</span> {{ item.comment_count }} {{ 'reply' if item.comment_count == 1 else 'replies' }}</span>
+      </div>
+      {% if item.comments %}
+      <div class="community-comments" aria-label="Recent replies">
+        {% for comment, author in item.comments %}
+        <article class="community-comment">
+          {{ member_avatar(author, 'community-avatar-small') }}
+          <div class="community-comment-content">
+            <div><strong>{{ author.name }}{% if comment.user_id == user.id %}<span class="community-you">You</span>{% endif %}</strong><time datetime="{{ comment.created_at.isoformat() }}">{{ comment.created_at.strftime('%b %d · %I:%M %p') }}</time></div>
+            <p>{{ comment.body }}</p>
+          </div>
+          {% if comment.user_id == user.id %}
+          <form method="post" action="{{ url_for('main.delete_community_comment', comment_id=comment.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <button class="community-delete" type="submit" aria-label="Delete your reply">×</button>
+          </form>
+          {% endif %}
+        </article>
+        {% endfor %}
+      </div>
+      {% if item.comment_count > item.comments|length %}
+      <p class="community-more-comments">Showing the latest {{ item.comments|length }} of {{ item.comment_count }} replies.</p>
+      {% endif %}
+      {% endif %}
+      <form class="community-reply-form" method="post" action="{{ url_for('main.create_community_comment', post_id=item.post.id) }}">
+        {{ member_avatar(user, 'community-avatar-small') }}
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <label class="sr-only" for="reply-{{ item.post.id }}">Reply to {{ item.post.author.name }}</label>
+        <input id="reply-{{ item.post.id }}" type="text" name="body" maxlength="600" placeholder="Write a kind, helpful reply..." required>
+        <button type="submit">Reply</button>
+      </form>
+    </article>
+    {% else %}
+    <section class="community-empty panel">
+      <span aria-hidden="true">✦</span>
+      <h2>Start the first conversation.</h2>
+      <p>Share something you’re working on or ask the community a career question.</p>
+    </section>
+    {% endfor %}
+  </section>
+
+  <aside class="community-sidebar">
+    <section class="panel community-guidelines">
+      <p class="card-kicker">A GOOD PLACE TO BEGIN</p>
+      <h2>Make this a kind corner of the internet.</h2>
+      <ul>
+        <li><span>01</span><div><strong>Be generous</strong><small>Share advice with respect and encouragement.</small></div></li>
+        <li><span>02</span><div><strong>Keep it useful</strong><small>Talk about skills, learning, interviews, and work.</small></div></li>
+        <li><span>03</span><div><strong>Protect your privacy</strong><small>Never post passwords, private contact details, or resume files.</small></div></li>
+      </ul>
+    </section>
+    <section class="community-profile-card">
+      {{ member_avatar(user, 'community-avatar-large') }}
+      <div><strong>{{ user.name }}</strong><small>Ready to join the conversation?</small></div>
+      <a href="{{ url_for('main.profile') }}">Edit profile <span aria-hidden="true">→</span></a>
+    </section>
+  </aside>
+</div>
+{% endblock %}

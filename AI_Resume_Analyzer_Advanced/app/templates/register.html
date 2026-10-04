@@ -1,13 +1,26 @@
 {% extends "base.html" %}
-{% block title %}Register{% endblock %}
+{% block title %}Create an account — InterviewIQ{% endblock %}
+{% block main_class %}auth-page{% endblock %}
 {% block content %}
-<div class="form-card">
-<h2>Create your account</h2>
-<form method="post">
-<input name="name" placeholder="Full name" required>
-<input name="email" type="email" placeholder="Email" required>
-<input name="password" type="password" placeholder="Password" minlength="8" required>
-<button class="btn">Create Account</button>
-</form>
-</div>
+<section class="auth-layout">
+  <div class="auth-story">
+    <span class="auth-story-icon">✦</span>
+    <p class="eyebrow">MAKE YOUR NEXT MOVE COUNT</p>
+    <h1>Build a career plan around your strengths.</h1>
+    <p>Create your free account to understand your resume, find relevant roles, and make your next steps more intentional.</p>
+    <div class="auth-story-list"><span>✓ <b>Resume insights that make sense</b></span><span>✓ <b>Job matches with skill-gap details</b></span></div>
+    <img class="auth-story-art" src="{{ url_for('static', filename='images/career-resume.svg') }}" alt="Illustration of a resume profile and verified details" width="720" height="440">
+  </div>
+  <div class="auth-card">
+    <div class="auth-card-heading"><p class="eyebrow">GET STARTED</p><h2>Create your account</h2><p>Set up your private career workspace.</p></div>
+    <form method="post" class="auth-form">
+      <label>Full name<input name="name" placeholder="Your name" autocomplete="name" maxlength="120" required></label>
+      <label>Email address<input name="email" type="email" placeholder="you@example.com" autocomplete="email" maxlength="180" required></label>
+      <label>Password<input name="password" type="password" placeholder="8–128 characters" minlength="8" maxlength="128" autocomplete="new-password" required><small>Use 8 to 128 characters.</small></label>
+      <button class="btn auth-submit" type="submit">Create my account <span aria-hidden="true">→</span></button>
+    </form>
+    <p class="auth-switch">Already have an account? <a href="{{ url_for('auth.login') }}">Log in</a></p>
+    <p class="auth-privacy">By creating an account, your resume and match history stay tied to your profile.</p>
+  </div>
+</section>
 {% endblock %}

@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} — InterviewIQ{% endblock %}
+{% block main_class %}page-shell resources-shell{% endblock %}
+{% block content %}
+<section class="page-intro page-intro-illustrated">
+  <p class="eyebrow">INTERVIEWIQ CAREER TOOLKIT</p>
+  <h1>Move from a question to a clear next step.</h1>
+  <p>Use practical, local-first tools to build application materials, explore role fit, and strengthen your career plan.</p>
+  <img class="page-intro-art" src="{{ url_for('static', filename='images/career-learning.svg') }}" alt="" width="720" height="440" fetchpriority="low">
+</section>
+<section class="resource-card-grid" aria-label="Career tools and resources">
+  {% for name, description, endpoint, slug in resources %}
+  <a class="resource-card" href="{% if endpoint == 'resources.resource_page' %}{{ url_for(endpoint, slug=slug) }}{% else %}{{ url_for(endpoint) }}{% endif %}">
+    <span class="resource-card-icon">{{ "%02d"|format(loop.index) }}</span>
+    <strong>{{ name }}</strong>
+    <span>{{ description }}</span>
+    <b>Explore <span aria-hidden="true">→</span></b>
+  </a>
+  {% endfor %}
+</section>
+<p class="resource-disclaimer">Scores and generated drafts are decision-support tools, not hiring, ATS, legal, or compensation guarantees. Review and personalize any output before using it.</p>
+{% endblock %}
